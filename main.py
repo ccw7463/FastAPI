@@ -1,4 +1,5 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, Request, status
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -13,12 +14,32 @@ app.add_middleware(
     allow_headers=["*"],  # 모든 헤더 허용
 )
 
+# 예외처리
+@app.exception_handler(HTTPException)
+def http_exception_handler(request, exc):
+    return JSONResponse(
+        content={
+            "state": exc.status_code,
+            "result": [],
+            "message": exc.detail
+        }
+    )
+    
+
 class ChatRequest(BaseModel):
     message: str
 
 @app.post("/api/chat")
 async def chat_endpoint(request: ChatRequest):
     return {"reply": "안녕하세요"}
+
+
+# @app.post("/api/chat")
+# async def chat_endpoint(request: ChatRequest):
+#     return {"reply": "안녕하세요"}
+
+
+
 
 if __name__ == "__main__":
     import uvicorn
